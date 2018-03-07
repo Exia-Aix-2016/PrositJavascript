@@ -1,11 +1,10 @@
-import { Observable, debounceTime, switchMap } from "rxjs";
+import { Observable } from "rxjs";
 
 let input = document.getElementById("input");
 let output = document.getElementById("output");
 
-let typing = Observable.fromEvent(input, "input")
+Observable.fromEvent(input, "input")
     .debounceTime(500)
-    //.filter(() => input.value.length > 0)
     .map(() => "http://127.0.0.1:3000/search/" + input.value.replace(" ", "+"))
     .switchMap(url =>
         Observable.fromPromise(
@@ -14,14 +13,11 @@ let typing = Observable.fromEvent(input, "input")
             })
         )
     )
-    .switchMap(response => Observable.fromPromise(response.json()));
-
-typing.subscribe(renderResult);
-
-function renderResult(sugs) {
-    console.log(sugs);
-    output.innerHTML = sugs.reduce((acc, sug) => {
-        acc += `<li>${sug.word}</li>`;
-        return acc;
-    }, "");
-}
+    .switchMap(response => Observable.fromPromise(response.json()))
+    .subscribe(sugs => {
+        console.log(sugs);
+        output.innerHTML = sugs.reduce((acc, sug) => {
+            acc += `<li>${sug.word}</li>`;
+            return acc;
+        }, "");
+    });
